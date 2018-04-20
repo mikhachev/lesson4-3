@@ -1,222 +1,59 @@
 <?php
 
-session_start();
-
-include("config.php");
-include("function.php");
-
-$login = !empty($_SESSION['login']) ? $_SESSION['login'] : false;
-
-if (empty($login)) {
-    echo "<a href='/emikhachev/lesson4-3/regform.php'>Войдите на сайт</a>";
-    die;
-}
-
-$sql = "SELECT id FROM user WHERE login = :login";
-$stm = $pdo->prepare($sql);
-$stm -> bindParam(':login', $login, PDO::PARAM_STR);
-$stm->execute();
-
-$userId = $stm->fetchColumn();
-
-$description = "";
-if (empty($_GET['oper']))
-{
-    $oper = null;
-} else
-{
-    $oper = (string)$_GET['oper'];
-}
-
-// почему закомментированный блок ниже не работает - строки 32-40 ?
-/*if (!isset($_GET['id']) && isset($_POST['save']) && !empty($_POST['description'])) {
-    $description = (string)$_POST['description'];
-    $sql = "INSERT INTO task (user_id, description, date_added) VALUES (:user_id, :description, NOW())";
-    $stm = $pdo->prepare($sql);
-    $stm -> bindParam(':user_id', $user_id, PDO::PARAM_INT);
-    $stm -> bindParam(':description', $description, PDO::PARAM_STR);
-    $stm->execute();
-    
-    header("Location: /emikhachev/lesson4-3/index.php"); 
-}*/
-
-if (!isset($_GET['id']) && isset($_POST['save']) && !empty($_POST['description'])) {
-    $description = (string)$_POST['description'];
-    $sql = "INSERT INTO task (user_id, description, date_added) VALUES (?, ?, NOW())";
-    $stm = $pdo->prepare($sql);
-    $stm->execute([
-        $userId,
-        $description
-    ]);
-    
-    header("Location: /emikhachev/lesson4-3/index.php"); 
-}
-
-
-if (!empty($oper) && !empty($_GET['id'])) {
-    $id = (int)$_GET['id'];
-    
-   
-    if (!empty($_POST['description'])) {
-        $description = $_POST['description'];
-    
-        $sql = "UPDATE task SET description = ? WHERE id = ? AND user_id = ?";
-        $stm = $pdo->prepare($sql);
-        $stm->execute([
-            $description,
-            $id,
-            $userId
-        ]);
-        
-        header("Location: /emikhachev/lesson4-3/index.php"); 
-    }
-    
-    if ($oper == 'edit') {
-        $sql = "SELECT description FROM tasks WHERE id = ?";
-        $stm = $pdo->prepare($sql);
-        $stm->execute([$id]);
-        
-        $description = $stm->fetchColumn();
-    }
-    
-     if ($oper == 'delete') {  
-        $sql = "DELETE FROM task WHERE id = ? AND user_id = ?";
-        $stm = $pdo->prepare($sql);
-        $stm->execute([
-            $id,
-            $userId
-        ]);
-        
-        header("Location: /emikhachev/lesson4-3/index.php"); 
-    }
-    
-   if ($oper == 'done') {
-        $sql = "UPDATE task SET is_done = 1 WHERE id = ? AND (user_id = ? OR assigned_user_id = ?)";
-        $stm = $pdo->prepare($sql);
-        $stm->execute([
-            $id,
-            $userId,
-            $userId
-        ]);
-        
-        header("Location: /emikhachev/lesson4-3/index.php"); 
-    }
-     
-     if ($oper == 'undone') {
-        $sql = "UPDATE task SET is_done = 0 WHERE id = ? AND (user_id = ? OR assigned_user_id = ?)";
-        $stm = $pdo->prepare($sql);
-        $stm->execute([
-            $id,
-            $userId,
-            $userId
-        ]);
-        
-        header("Location: /emikhachev/lesson4-3/index.php"); 
-    }
-}
-
-if (!empty($_POST['assign']) && !empty($_POST['assigned_user_id'])) {
-    $formData = explode("_", $_POST['assigned_user_id']);
-    $assignedUserId = (int)$formData[1];
-    $taskId = (int)$formData[3];
-    
-    if (!empty($userId) && !empty($taskId)) {
-        $sql = "UPDATE task SET assigned_user_id = ? WHERE id = ? AND user_id = ?";
-        $stm = $pdo->prepare($sql);
-        $stm->execute([
-            $assignedUserId,
-            $taskId,
-            $userId
-        ]);
-        
-         header("Location: /emikhachev/lesson4-3/index.php"); 
-    }
-}
-
-if (!empty($_POST['assign']) && !empty($_POST['assigned_user_id']))
-{
-    $formData = explode("_", $_POST['assigned_user_id']);
-    $assignedUserId = (int)$formData[1];
-    $taskId = (int)$formData[3];
-
-    if (!empty($userId) && !empty($taskId)) {
-        $sql = "UPDATE task SET assigned_user_id = ? WHERE id = ? AND user_id = ?";
-        $stm = $pdo->prepare($sql);
-        $stm->execute([
-            $assignedUserId,
-            $taskId,
-            $userId
-        ]);
-
-         header("Location: /emikhachev/lesson4-3/index.php"); 
-    }
-}
-
-//
-$sql = "SELECT t.*, u.login, u2.login author
-        FROM task t
-        LEFT JOIN user u ON t.assigned_user_id = u.id
-        LEFT JOIN user u2 ON t.user_id = u2.id
-        WHERE user_id = ?";
-$stm = $pdo->prepare($sql);
-$stm->execute([
-    $userId
-]);
-
-$myTasks = $stm->fetchAll();
-
-$sql = "SELECT t.*, u.login, u2.login author
-        FROM task t
-        LEFT JOIN user u ON t.assigned_user_id = u.id
-        LEFT JOIN user u2 ON t.user_id = u2.id
-        WHERE assigned_user_id = ? ";
-$stm = $pdo->prepare($sql);
-$stm->execute([
-    $userId
-]);
-
-$myAssignedTasks = $stm->fetchAll();
-
-//
-
-$sql = "SELECT * FROM user WHERE id != ?";
-$stm = $pdo->prepare($sql);
-$stm->execute([
-    $userId
-]);
-
-$userList = $stm->fetchAll();
-$user = [];
-
-foreach ($userList as $item) {
-    $user[$item['id']] = $item['login'];
-}
+include("controller.php");
+//echo $url_dir;
 
 ?>
-    <style>
 
-        table td, table th {
-            border: 1px solid #ccc;
-            padding: 5px;
-        }
-
-    </style>
-
-    <h1>Список задач, которые Вам (<?=$login?>) необходимо решить:</h1>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Select из нескольких таблиц</title>
+</head>
+<body>
+  <style>
+    table td, table th 
+    {
+    border: 1px solid #ccc;
+    padding: 5px;
+    }
+  </style>
+  <h1>Список задач, которые Вам (<?=$login?>) необходимо решить:</h1>
     <div>
-        <form method="POST">
-            <input type="text" name="description" placeholder="Задача" value="<?=$description?>" />
-            <input type="submit" name="save" value="<?php echo ($oper == 'edit' ? 'Введите новое значение' : 'Добавить') ?>" />
-        </form>
+      <form method="POST">
+        <input type="text" name = "description" placeholder = "Задача" value = "<?=$description?>" />
+        <input type="submit" name = "save" value = "<?=$button_save?>"  />
+      </form>
     </div>
-
-
     
+     <table>
+   
+      <tr>
+        <th>Описание задачи</th>
+          <th>Дата добавления</th>
+          <th>Статус</th>
+          <th>Действия</th>
+          <th>Ответственный</th>
+          <th>Автор</th>
+          <th>Делегировать</th>
+       </tr>
+       
 <?php showTasks($myTasks, $userId, $user); ?>
+    </table>
+    <p><strong>Также, посмотрите, что от Вас требуют другие люди:</strong></p>
+    <table>
+      <tr>
+        <th>Описание задачи</th>
+        <th>Дата добавления</th>
+        <th>Статус</th>
+        <th>Действия</th>
+        <th>Ответственный</th>
+        <th>Автор</th>
+      </tr>
+<?php showTasks($myAssignedTasks, $userId);?>
+   </table><br>
+<?php echo "<a href=$url_dir/logout.php>Выход</a>";?>
 
-        <p><strong>Также, посмотрите, что от Вас требуют другие люди:</strong></p>
-
-
-        <?php showTasks($myAssignedTasks, $userId); ?>
-
-        <p><a href="/emikhachev/lesson4-3/logout.php">Выход</a></p>
+</body>
+</html>

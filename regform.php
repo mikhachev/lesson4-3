@@ -5,7 +5,6 @@ session_start();
 include("config.php");
 include("function.php");
 
-
 //
 if (isset($_POST['login']) and isset($_POST['password'])){
     $login = trim($_POST['login']);
@@ -69,7 +68,7 @@ if (isset($_POST['sign_in'])) {
 
 <p><?=$msg?></p>
 
-<form method="POST">
+<form method="POST" action = "?login" name="loginform">
     <input type="text" name="login" placeholder="Логин" />
     <input type="password" name="password" placeholder="Пароль" />
     <input type="submit" name="sign_in" value="Вход" />
