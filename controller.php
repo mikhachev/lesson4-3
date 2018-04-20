@@ -37,7 +37,7 @@ if ($oper == 'edit')
    $button_save = 'Сохранить'; 
 }
 
-// почему закомментированный блок ниже не работает - строки 32-40 ?
+/*//
 if (!isset($_GET['id']) && isset($_POST['save']) && !empty($_POST['description'])) {
     $description = (string)$_POST['description'];
     $sql = "INSERT INTO task (user_id, description, date_added) VALUES (:user_id, :description, NOW())";
@@ -49,7 +49,7 @@ if (!isset($_GET['id']) && isset($_POST['save']) && !empty($_POST['description']
     
     backHome(); 
 }
-/*
+*/
 if (!isset($_GET['id']) && isset($_POST['save']) && !empty($_POST['description'])) {
     $description = (string)$_POST['description'];
     $sql = "INSERT INTO task (user_id, description, date_added) VALUES (?, ?, NOW())";
@@ -60,7 +60,7 @@ if (!isset($_GET['id']) && isset($_POST['save']) && !empty($_POST['description']
     ]);
     
     backHome(); 
-}*/
+}
 
 if (!empty($oper) && !empty($_GET['id'])) {
     $id = (int)$_GET['id'];
