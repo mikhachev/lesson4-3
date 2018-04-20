@@ -18,7 +18,8 @@ function logout()
 
 function backHome()
 {
-	header("Location: /user_data/emikhachev/lesson4-3/index.php");
+	header("Location: $url_dir./index.php");
+	
 }
 
 function showTasks($tasks, $userId, $users = [])

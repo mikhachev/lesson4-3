@@ -68,7 +68,7 @@ if (isset($_POST['sign_in'])) {
 
 <p><?=$msg?></p>
 
-<form method="POST" action = "?login" name="loginform">
+<form method="POST" >
     <input type="text" name="login" placeholder="Логин" />
     <input type="password" name="password" placeholder="Пароль" />
     <input type="submit" name="sign_in" value="Вход" />
